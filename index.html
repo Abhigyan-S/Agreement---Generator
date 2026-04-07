@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Legal Agreement Generator</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-600: #185FA5; --blue-700: #0C447C; --blue-800: #042C53;
+    --green-50: #EAF3DE; --green-600: #3B6D11; --green-700: #27500A;
+    --gray-50: #F8F8F6; --gray-100: #EDEDEA; --gray-200: #D3D1C7; --gray-400: #888780; --gray-600: #5F5E5A; --gray-900: #1A1A18;
+    --amber-50: #FAEEDA; --amber-600: #854F0B;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --radius: 10px; --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  body { font-family: var(--font); background: var(--gray-50); color: var(--gray-900); min-height: 100vh; font-size: 15px; }
+
+  /* TOP NAV */
+  .topbar { background: #fff; border-bottom: 1px solid var(--gray-100); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 58px; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .topbar-brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; color: var(--gray-900); text-decoration: none; }
+  .topbar-brand-icon { width: 32px; height: 32px; background: var(--blue-600); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
+  .topbar-tabs { display: flex; gap: 2px; }
+  .topbar-tab { padding: 8px 16px; font-size: 13px; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; border: none; background: transparent; color: var(--gray-600); transition: background 0.15s, color 0.15s; font-family: var(--font); }
+  .topbar-tab:hover { background: var(--gray-50); color: var(--gray-900); }
+  .topbar-tab.active { background: var(--blue-50); color: var(--blue-600); }
+  .topbar-badge { background: var(--blue-600); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.04em; }
+
+  /* LAYOUT */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== GENERATOR PAGE ===== */
+  .gen-layout { max-width: 820px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+  .gen-header { margin-bottom: 2rem; }
+  .gen-header h1 { font-size: 24px; font-weight: 600; color: var(--gray-900); margin-bottom: 6px; }
+  .gen-header p { font-size: 14px; color: var(--gray-600); line-height: 1.6; }
+
+  /* STEP INDICATOR */
+  .steps { display: flex; align-items: center; margin-bottom: 2rem; }
+  .step-item { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .step-item:last-child { flex: none; }
+  .step-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; transition: all 0.2s; }
+  .step-circle.pending { background: #fff; border: 1.5px solid var(--gray-200); color: var(--gray-400); }
+  .step-circle.active { background: var(--blue-600); border: 1.5px solid var(--blue-600); color: #fff; }
+  .step-circle.done { background: var(--green-600); border: 1.5px solid var(--green-600); color: #fff; }
+  .step-label { font-size: 12px; font-weight: 500; color: var(--gray-600); white-space: nowrap; }
+  .step-label.active { color: var(--blue-600); }
+  .step-label.done { color: var(--green-600); }
+  .step-line { flex: 1; height: 1.5px; background: var(--gray-200); margin: 0 8px; transition: background 0.2s; }
+  .step-line.done { background: var(--green-600); }
+
+  /* CARD */
+  .card { background: #fff; border: 1px solid var(--gray-100); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+  .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--gray-400); margin-bottom: 1.25rem; padding-bottom: 10px; border-bottom: 1px solid var(--gray-100); }
+
+  /* AGREEMENT TYPE CARDS */
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .type-card { border: 1.5px solid var(--gray-100); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; transition: all 0.15s; background: #fff; text-align: left; width: 100%; font-family: var(--font); }
+  .type-card:hover { border-color: var(--blue-100); background: var(--blue-50); }
+  .type-card.selected { border-color: var(--blue-600); background: var(--blue-50); }
+  .type-card-icon { font-size: 20px; margin-bottom: 8px; }
+  .type-card-title { font-size: 14px; font-weight: 600; color: var(--gray-900); margin-bottom: 4px; }
+  .type-card-desc { font-size: 12px; color: var(--gray-600); line-height: 1.5; }
+
+  /* FORM */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.span2 { grid-column: span 2; }
+  label { font-size: 12px; font-weight: 600; color: var(--gray-600); letter-spacing: 0.02em; }
+  input, select, textarea { width: 100%; padding: 9px 12px; font-size: 13.5px; font-family: var(--font); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); background: #fff; color: var(--gray-900); transition: border-color 0.15s, box-shadow 0.15s; outline: none; }
+  input:focus, select:focus, textarea:focus { border-color: var(--blue-600); box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
+  input::placeholder, textarea::placeholder { color: var(--gray-400); }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+  /* PARTY SECTION HEADER */
+  .party-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .party-badge { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .party-badge.a { background: var(--blue-50); color: var(--blue-600); }
+  .party-badge.b { background: var(--green-50); color: var(--green-600); }
+  .party-label { font-size: 13px; font-weight: 600; color: var(--gray-900); }
+  .party-sublabel { font-size: 12px; color: var(--gray-400); margin-left: auto; }
+
+  /* BUTTONS */
+  .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
+  .btn { padding: 9px 20px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; border: 1px solid var(--gray-200); background: #fff; color: var(--gray-700, #444); font-family: var(--font); transition: all 0.15s; }
+  .btn:hover { background: var(--gray-50); border-color: var(--gray-200); }
+  .btn-primary { background: var(--blue-600); color: #fff; border-color: var(--blue-600); }
+  .btn-primary:hover { background: var(--blue-700); border-color: var(--blue-700); }
+  .btn-success { background: var(--green-600); color: #fff; border-color: var(--green-600); font-size: 14px; padding: 11px 28px; }
+  .btn-success:hover { background: var(--green-700); }
+
+  /* PREVIEW */
+  .preview-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .preview-meta { display: flex; gap: 8px; }
+  .tag { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag-blue { background: var(--blue-50); color: var(--blue-600); }
+  .tag-green { background: var(--green-50); color: var(--green-600); }
+  .preview-doc { background: #fff; border: 1px solid var(--gray-100); border-radius: var(--radius); padding: 2rem 2.5rem; font-family: 'Georgia', 'Times New Roman', serif; font-size: 13.5px; line-height: 2; color: #1a1a1a; max-height: 460px; overflow-y: auto; box-shadow: var(--shadow-md); white-space: pre-wrap; }
+  .preview-doc strong { font-weight: 700; }
+  .download-row { display: flex; align-items: center; justify-content: space-between; background: var(--blue-50); border: 1px solid var(--blue-100); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .download-row-text h3 { font-size: 14px; font-weight: 600; color: var(--blue-700); margin-bottom: 2px; }
+  .download-row-text p { font-size: 12px; color: var(--blue-600); }
+
+  /* ===== INSTRUCTIONS PAGE ===== */
+  .inst-layout { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+  .inst-hero { background: linear-gradient(135deg, var(--blue-600) 0%, var(--blue-800) 100%); border-radius: 14px; padding: 2.5rem; color: #fff; margin-bottom: 2rem; }
+  .inst-hero h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  .inst-hero p { font-size: 15px; opacity: 0.85; line-height: 1.7; max-width: 560px; }
+  .inst-hero-steps { display: flex; gap: 12px; margin-top: 1.5rem; flex-wrap: wrap; }
+  .inst-hero-step { background: rgba(255,255,255,0.15); border-radius: var(--radius-sm); padding: 8px 14px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .inst-hero-step-num { background: rgba(255,255,255,0.25); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+
+  .inst-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .inst-card { background: #fff; border: 1px solid var(--gray-100); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); }
+  .inst-card-icon { font-size: 28px; margin-bottom: 12px; }
+  .inst-card h3 { font-size: 15px; font-weight: 600; color: var(--gray-900); margin-bottom: 8px; }
+  .inst-card p { font-size: 13px; color: var(--gray-600); line-height: 1.7; }
+  .inst-card ul { margin-top: 8px; padding-left: 16px; }
+  .inst-card ul li { font-size: 13px; color: var(--gray-600); line-height: 1.8; }
+
+  .inst-types { background: #fff; border: 1px solid var(--gray-100); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+  .inst-types h2 { font-size: 16px; font-weight: 600; margin-bottom: 1rem; color: var(--gray-900); }
+  .inst-type-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--gray-100); }
+  .inst-type-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .inst-type-badge { width: 38px; height: 38px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .inst-type-body h4 { font-size: 14px; font-weight: 600; color: var(--gray-900); margin-bottom: 3px; }
+  .inst-type-body p { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+
+  .inst-tips { background: var(--amber-50); border: 1px solid #FAC775; border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+  .inst-tips h3 { font-size: 14px; font-weight: 600; color: var(--amber-600); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .inst-tips ul { padding-left: 18px; }
+  .inst-tips ul li { font-size: 13px; color: #633806; line-height: 1.9; }
+
+  .inst-cta { text-align: center; padding: 1.5rem; }
+  .inst-cta p { font-size: 14px; color: var(--gray-600); margin-bottom: 12px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .grid2, .type-grid, .inst-grid { grid-template-columns: 1fr; }
+    .field.span2 { grid-column: span 1; }
+    .steps { overflow-x: auto; }
+    .topbar { padding: 0 1rem; }
+    .topbar-tabs { gap: 0; }
+    .topbar-tab { padding: 8px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAVIGATION -->
+<nav class="topbar">
+  <a class="topbar-brand" href="#">
+    <div class="topbar-brand-icon">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="2" stroke="#fff" stroke-width="1.5"/><line x1="5" y1="6" x2="13" y2="6" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="9" x2="13" y2="9" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="12" x2="9" y2="12" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    Agreement Generator
+  </a>
+  <div class="topbar-tabs">
+    <button class="topbar-tab active" onclick="showPage('generator', this)">Create Agreement</button>
+    <button class="topbar-tab" onclick="showPage('instructions', this)">How to Use</button>
+  </div>
+  <span class="topbar-badge">BETA</span>
+</nav>
+
+<!-- GENERATOR PAGE -->
+<div id="page-generator" class="page active">
+  <div class="gen-layout">
+    <div class="gen-header">
+      <h1>Legal Agreement Generator</h1>
+      <p>Generate a professionally formatted, ready-to-sign agreement in under 2 minutes. Fill in your details and download a Word document instantly.</p>
+    </div>
+
+    <!-- STEP INDICATOR -->
+    <div class="steps" id="stepIndicator"></div>
+
+    <!-- STEP CONTENT -->
+    <div id="stepContent"></div>
+  </div>
+</div>
+
+<!-- INSTRUCTIONS PAGE -->
+<div id="page-instructions" class="page">
+  <div class="inst-layout">
+
+    <div class="inst-hero">
+      <h1>How to Use This Tool</h1>
+      <p>This tool lets anyone on the team generate a clean, formatted legal agreement in minutes, without needing legal software or templates on your computer.</p>
+      <div class="inst-hero-steps">
+        <div class="inst-hero-step"><span class="inst-hero-step-num">1</span> Choose agreement type</div>
+        <div class="inst-hero-step"><span class="inst-hero-step-num">2</span> Fill in party details</div>
+        <div class="inst-hero-step"><span class="inst-hero-step-num">3</span> Set the terms</div>
+        <div class="inst-hero-step"><span class="inst-hero-step-num">4</span> Download Word doc</div>
+      </div>
+    </div>
+
+    <div class="inst-grid">
+      <div class="inst-card">
+        <div class="inst-card-icon">🌐</div>
+        <h3>No software needed</h3>
+        <p>This tool runs entirely in your web browser. No downloads, no installs, no logins required. Just open the link and start filling in your details.</p>
+      </div>
+      <div class="inst-card">
+        <div class="inst-card-icon">📄</div>
+        <h3>Instant Word download</h3>
+        <p>When you're done, click "Download Word document." You'll get a properly formatted .docx file you can open in Microsoft Word, Google Docs, or any word processor to review, edit, and send for signatures.</p>
+      </div>
+      <div class="inst-card">
+        <div class="inst-card-icon">🔒</div>
+        <h3>Your data stays private</h3>
+        <p>All processing happens locally in your browser. No data is sent to any server. Nothing is stored. Each session is completely fresh when you reload the page.</p>
+      </div>
+      <div class="inst-card">
+        <div class="inst-card-icon">✏️</div>
+        <h3>Always review before sending</h3>
+        <p>The generated document is a strong starting point. Always have a qualified attorney review any agreement before it is signed or sent to a counterparty.</p>
+      </div>
+    </div>
+
+    <div class="inst-types">
+      <h2>Agreement types available</h2>
+      <div class="inst-type-row">
+        <div class="inst-type-badge" style="background:#E6F1FB;">🤝</div>
+        <div class="inst-type-body">
+          <h4>Mutual NDA</h4>
+          <p>Used when both parties will be sharing confidential information with each other. Common for exploratory partnership discussions, joint ventures, or early-stage negotiations. Both parties agree to protect each other's information equally.</p>
+        </div>
+      </div>
+      <div class="inst-type-row">
+        <div class="inst-type-badge" style="background:#EAF3DE;">🔒</div>
+        <div class="inst-type-body">
+          <h4>One-Way NDA</h4>
+          <p>Used when only one party is sharing confidential information. For example, if you are pitching to a potential investor or showing a vendor your proprietary process, only your information needs protecting. The receiving party signs to protect it.</p>
+        </div>
+      </div>
+      <div class="inst-type-row">
+        <div class="inst-type-badge" style="background:#FAEEDA;">🏢</div>
+        <div class="inst-type-body">
+          <h4>Partner Agreement</h4>
+          <p>Formalizes a business collaboration. Covers scope of work, each party's responsibilities, compensation or revenue share, exclusivity, and duration. Use this when entering a new business relationship that goes beyond information sharing.</p>
+        </div>
+      </div>
+      <div class="inst-type-row">
+        <div class="inst-type-badge" style="background:#FAECE7;">📦</div>
+        <div class="inst-type-body">
+          <h4>Reseller Agreement</h4>
+          <p>Authorizes a third party to resell your products or services. Sets out territory, pricing, exclusivity, and the specific products covered. Use this when onboarding a channel partner, distributor, or authorized reseller.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="inst-tips">
+      <h3>⚠️ Important reminders</h3>
+      <ul>
+        <li>All generated agreements are boilerplate templates. They are starting points, not final legal documents.</li>
+        <li>Have a qualified attorney review any agreement before signing, especially for high-value or complex arrangements.</li>
+        <li>Make sure the governing law and jurisdiction fields match where your company is incorporated or operates.</li>
+        <li>For the "Term" field, enter how long the agreement is active. For "Survival," enter how long confidentiality obligations continue after the agreement ends.</li>
+        <li>If a field is left blank, it will appear in the document with a placeholder. Make sure to fill those in before distributing.</li>
+      </ul>
+    </div>
+
+    <div class="inst-cta">
+      <p>Ready to generate your first agreement?</p>
+      <button class="btn btn-primary" onclick="showPage('generator', document.querySelector('.topbar-tab'))">Go to Agreement Generator &rarr;</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const state = {
+  step: 0,
+  type: 'nda_mutual',
+  disclosing: { name:'', entity:'Corporation', jurisdiction:'', address:'', signerName:'', signerTitle:'' },
+  receiving:  { name:'', entity:'Corporation', jurisdiction:'', address:'', signerName:'', signerTitle:'' },
+  partner:    { name:'', role:'', address:'', signerName:'', signerTitle:'' },
+  terms:      { purpose:'', term:'1 year', survival:'2 years', governingLaw:'', venue:'' },
+  partnerTerms: { scope:'', compensation:'', duration:'12 months', exclusivity:'non-exclusive', governingLaw:'', venue:'' }
+};
+
+const STEPS = ['Agreement type', 'Party details', 'Terms', 'Preview & download'];
+
+const TYPES = [
+  { id:'nda_mutual', icon:'🤝', title:'Mutual NDA',       desc:'Both parties share and protect each other\'s confidential information.' },
+  { id:'nda_one',    icon:'🔒', title:'One-Way NDA',      desc:'Only one party discloses; the other agrees to confidentiality.' },
+  { id:'partner',    icon:'🏢', title:'Partner Agreement', desc:'Formalize a business collaboration with scope, terms, and compensation.' },
+  { id:'reseller',   icon:'📦', title:'Reseller Agreement',desc:'Authorize a partner to resell your products or services.' }
+];
+
+// ─── PAGE SWITCH ─────────────────────────────────────────────────────────────
+function showPage(id, clickedTab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.topbar-tab').forEach(t => t.classList.remove('active'));
+  if (id === 'generator') document.querySelectorAll('.topbar-tab')[0].classList.add('active');
+  else document.querySelectorAll('.topbar-tab')[1].classList.add('active');
+}
+
+// ─── STEP INDICATOR ──────────────────────────────────────────────────────────
+function renderIndicator() {
+  const el = document.getElementById('stepIndicator');
+  let html = '';
+  STEPS.forEach((label, i) => {
+    const cls = i < state.step ? 'done' : i === state.step ? 'active' : 'pending';
+    const icon = i < state.step ? '✓' : i + 1;
+    html += `<div class="step-item">
+      <div class="step-circle ${cls}">${icon}</div>
+      <span class="step-label ${cls}">${label}</span>
+    </div>`;
+    if (i < STEPS.length - 1) html += `<div class="step-line ${i < state.step ? 'done' : ''}"></div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render() {
+  renderIndicator();
+  const el = document.getElementById('stepContent');
+  const fns = [renderStep0, renderStep1, renderStep2, renderStep3];
+  el.innerHTML = fns[state.step]();
+}
+
+// ─── STEP 0: TYPE ─────────────────────────────────────────────────────────────
+function renderStep0() {
+  return `
+    <div class="card">
+      <div class="card-title">Select agreement type</div>
+      <div class="type-grid">
+        ${TYPES.map(t => `
+          <button class="type-card ${state.type === t.id ? 'selected' : ''}" onclick="state.type='${t.id}';render()">
+            <div class="type-card-icon">${t.icon}</div>
+            <div class="type-card-title">${t.title}</div>
+            <div class="type-card-desc">${t.desc}</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+    <div class="btn-row">
+      <span></span>
+      <button class="btn btn-primary" onclick="go(1)">Continue &rarr;</button>
+    </div>`;
+}
+
+// ─── STEP 1: PARTIES ──────────────────────────────────────────────────────────
+function renderStep1() {
+  const isPartner = ['partner','reseller'].includes(state.type);
+  const isOneWay  = state.type === 'nda_one';
+  const d = state.disclosing, r = state.receiving, p = state.partner;
+
+  const entityOpts = ['Corporation','LLC','Partnership','Sole Proprietorship','Limited Partnership'];
+
+  const partyA = `
+    <div class="card">
+      <div class="party-header">
+        <div class="party-badge a">A</div>
+        <span class="party-label">${isPartner ? 'Your company' : isOneWay ? 'Disclosing party' : 'Party A'}</span>
+        <span class="party-sublabel">Required</span>
+      </div>
+      <div class="grid2">
+        <div class="field span2"><label>Company / individual name</label><input id="d_name" value="${d.name}" placeholder="e.g. Acme Corporation" /></div>
+        <div class="field"><label>Entity type</label><select id="d_entity">${entityOpts.map(o=>`<option ${d.entity===o?'selected':''}>${o}</option>`).join('')}</select></div>
+        <div class="field"><label>Jurisdiction (state or country)</label><input id="d_jur" value="${d.jurisdiction}" placeholder="e.g. Delaware, USA" /></div>
+        <div class="field span2"><label>Principal address</label><input id="d_addr" value="${d.address}" placeholder="123 Main St, Wilmington, DE 19801" /></div>
+        <div class="field"><label>Authorized signatory name</label><input id="d_signer" value="${d.signerName}" placeholder="Jane Smith" /></div>
+        <div class="field"><label>Signatory title</label><input id="d_title" value="${d.signerTitle}" placeholder="Chief Executive Officer" /></div>
+      </div>
+    </div>`;
+
+  const partyB = isPartner ? `
+    <div class="card">
+      <div class="party-header">
+        <div class="party-badge b">B</div>
+        <span class="party-label">${state.type === 'reseller' ? 'Reseller / distributor' : 'Partner company'}</span>
+        <span class="party-sublabel">Required</span>
+      </div>
+      <div class="grid2">
+        <div class="field span2"><label>Company / individual name</label><input id="p_name" value="${p.name}" placeholder="e.g. Partner Co" /></div>
+        <div class="field span2"><label>Role or description</label><input id="p_role" value="${p.role}" placeholder="e.g. Authorized Reseller for North America" /></div>
+        <div class="field span2"><label>Address</label><input id="p_addr" value="${p.address}" placeholder="456 Oak Ave, Austin, TX 78701" /></div>
+        <div class="field"><label>Signatory name</label><input id="p_signer" value="${p.signerName}" placeholder="John Doe" /></div>
+        <div class="field"><label>Signatory title</label><input id="p_title" value="${p.signerTitle}" placeholder="President" /></div>
+      </div>
+    </div>` : `
+    <div class="card">
+      <div class="party-header">
+        <div class="party-badge b">B</div>
+        <span class="party-label">${isOneWay ? 'Receiving party' : 'Party B'}</span>
+        <span class="party-sublabel">Required</span>
+      </div>
+      <div class="grid2">
+        <div class="field span2"><label>Company / individual name</label><input id="r_name" value="${r.name}" placeholder="e.g. Beta Inc" /></div>
+        <div class="field"><label>Entity type</label><select id="r_entity">${entityOpts.map(o=>`<option ${r.entity===o?'selected':''}>${o}</option>`).join('')}</select></div>
+        <div class="field"><label>Jurisdiction</label><input id="r_jur" value="${r.jurisdiction}" placeholder="e.g. California, USA" /></div>
+        <div class="field span2"><label>Address</label><input id="r_addr" value="${r.address}" placeholder="456 Oak Ave, San Francisco, CA 94102" /></div>
+        <div class="field"><label>Signatory name</label><input id="r_signer" value="${r.signerName}" placeholder="John Doe" /></div>
+        <div class="field"><label>Signatory title</label><input id="r_title" value="${r.signerTitle}" placeholder="COO" /></div>
+      </div>
+    </div>`;
+
+  return partyA + partyB + `
+    <div class="btn-row">
+      <button class="btn" onclick="go(0)">&larr; Back</button>
+      <button class="btn btn-primary" onclick="saveParties();go(2)">Continue &rarr;</button>
+    </div>`;
+}
+
+// ─── STEP 2: TERMS ────────────────────────────────────────────────────────────
+function renderStep2() {
+  const isPartner = ['partner','reseller'].includes(state.type);
+  const t = state.terms, pt = state.partnerTerms;
+  const termOpts = ['6 months','1 year','2 years','3 years','5 years'];
+  const survivalOpts = ['6 months','1 year','2 years','3 years','5 years'];
+  const durationOpts = ['6 months','12 months','2 years','3 years'];
+
+  if (isPartner) {
+    return `
+      <div class="card">
+        <div class="card-title">Agreement terms</div>
+        <div class="grid2">
+          <div class="field span2"><label>Scope of engagement</label><textarea id="pt_scope" placeholder="Describe the products, services, or geographic territory covered by this agreement...">${pt.scope}</textarea></div>
+          <div class="field span2"><label>Compensation or revenue share</label><textarea id="pt_comp" placeholder="e.g. Partner receives 15% commission on all closed deals directly attributable to their referrals, paid within 30 days of invoice settlement...">${pt.compensation}</textarea></div>
+          <div class="field"><label>Duration</label><select id="pt_duration">${durationOpts.map(o=>`<option ${pt.duration===o?'selected':''}>${o}</option>`).join('')}</select></div>
+          <div class="field"><label>Exclusivity</label><select id="pt_excl"><option ${pt.exclusivity==='non-exclusive'?'selected':''}>non-exclusive</option><option ${pt.exclusivity==='exclusive'?'selected':''}>exclusive</option></select></div>
+          <div class="field"><label>Governing law (state / country)</label><input id="pt_law" value="${pt.governingLaw}" placeholder="e.g. State of Delaware, USA" /></div>
+          <div class="field"><label>Venue / dispute jurisdiction</label><input id="pt_venue" value="${pt.venue}" placeholder="e.g. Wilmington, Delaware" /></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="go(1)">&larr; Back</button>
+        <button class="btn btn-primary" onclick="saveTerms();go(3)">Preview agreement &rarr;</button>
+      </div>`;
+  }
+
+  return `
+    <div class="card">
+      <div class="card-title">Agreement terms</div>
+      <div class="grid2">
+        <div class="field span2"><label>Purpose of disclosure</label><textarea id="t_purpose" placeholder="e.g. exploring a potential business collaboration in the field of enterprise software and cloud solutions...">${t.purpose}</textarea></div>
+        <div class="field"><label>Agreement term</label><select id="t_term">${termOpts.map(o=>`<option ${t.term===o?'selected':''}>${o}</option>`).join('')}</select></div>
+        <div class="field"><label>Survival period after expiry</label><select id="t_survival">${survivalOpts.map(o=>`<option ${t.survival===o?'selected':''}>${o}</option>`).join('')}</select></div>
+        <div class="field"><label>Governing law (state / country)</label><input id="t_law" value="${t.governingLaw}" placeholder="e.g. State of New York, USA" /></div>
+        <div class="field"><label>Venue / dispute jurisdiction</label><input id="t_venue" value="${t.venue}" placeholder="e.g. New York City, New York" /></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="go(1)">&larr; Back</button>
+      <button class="btn btn-primary" onclick="saveTerms();go(3)">Preview agreement &rarr;</button>
+    </div>`;
+}
+
+// ─── STEP 3: PREVIEW ──────────────────────────────────────────────────────────
+function renderStep3() {
+  const text = buildText();
+  const typeLabel = TYPES.find(t => t.id === state.type)?.title || '';
+  return `
+    <div class="download-row">
+      <div class="download-row-text">
+        <h3>Your agreement is ready</h3>
+        <p>Review the document below, then download as a Word file to edit, sign, and share.</p>
+      </div>
+      <div class="preview-meta">
+        <span class="tag tag-blue">${typeLabel}</span>
+        <span class="tag tag-green">Ready</span>
+      </div>
+    </div>
+    <div class="preview-doc">${text}</div>
+    <div class="btn-row" style="margin-top:1.25rem;">
+      <button class="btn" onclick="go(2)">&larr; Edit details</button>
+      <button class="btn btn-success" onclick="downloadDocx()">&#8595;&nbsp; Download Word document</button>
+    </div>`;
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function go(n) { state.step = n; render(); window.scrollTo({top: 0, behavior:'smooth'}); }
+
+function saveParties() {
+  const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  state.disclosing = { name:g('d_name'), entity:g('d_entity'), jurisdiction:g('d_jur'), address:g('d_addr'), signerName:g('d_signer'), signerTitle:g('d_title') };
+  if (['partner','reseller'].includes(state.type)) {
+    state.partner = { name:g('p_name'), role:g('p_role'), address:g('p_addr'), signerName:g('p_signer'), signerTitle:g('p_title') };
+  } else {
+    state.receiving = { name:g('r_name'), entity:g('r_entity'), jurisdiction:g('r_jur'), address:g('r_addr'), signerName:g('r_signer'), signerTitle:g('r_title') };
+  }
+}
+
+function saveTerms() {
+  const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  if (['partner','reseller'].includes(state.type)) {
+    state.partnerTerms = { scope:g('pt_scope'), compensation:g('pt_comp'), duration:g('pt_duration'), exclusivity:g('pt_excl'), governingLaw:g('pt_law'), venue:g('pt_venue') };
+  } else {
+    state.terms = { purpose:g('t_purpose'), term:g('t_term'), survival:g('t_survival'), governingLaw:g('t_law'), venue:g('t_venue') };
+  }
+}
+
+// ─── AGREEMENT TEXT ───────────────────────────────────────────────────────────
+function ph(val, label) { return val || `[${label}]`; }
+
+function buildText() {
+  const d = state.disclosing, r = state.receiving, p = state.partner;
+  const t = state.terms, pt = state.partnerTerms;
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const dN = ph(d.name,'Party A Name'), rN = ph(r.name,'Party B Name'), pN = ph(p.name,'Partner Name');
+
+  if (state.type === 'nda_mutual') return `<strong>MUTUAL NON-DISCLOSURE AGREEMENT</strong>
+
+This Mutual Non-Disclosure Agreement ("Agreement") is entered into as of ${today} ("Effective Date") by and between:
+
+${dN}, a ${ph(d.entity,'entity type')} organized under the laws of ${ph(d.jurisdiction,'jurisdiction')}, having its principal place of business at ${ph(d.address,'address')} ("Party A"); and
+
+${rN}, a ${ph(r.entity,'entity type')} organized under the laws of ${ph(r.jurisdiction,'jurisdiction')}, having its principal place of business at ${ph(r.address,'address')} ("Party B").
+
+Party A and Party B are referred to herein individually as a "Party" and collectively as the "Parties."
+
+<strong>1. PURPOSE</strong>
+The Parties wish to explore a potential business relationship relating to ${ph(t.purpose,'describe purpose of disclosure')}. In connection with this purpose, each Party may disclose certain Confidential Information to the other.
+
+<strong>2. DEFINITION OF CONFIDENTIAL INFORMATION</strong>
+"Confidential Information" means any non-public, proprietary, or confidential information disclosed by either Party to the other, whether oral, written, electronic, or in any other form, that is designated as confidential or that reasonably should be understood to be confidential given the nature of the information and circumstances of disclosure. Confidential Information does not include information that is already publicly available, was already known to the receiving Party, or is independently developed by the receiving Party without reference to the disclosing Party's information.
+
+<strong>3. OBLIGATIONS OF THE PARTIES</strong>
+Each Party agrees to: (a) hold the other Party's Confidential Information in strict confidence using at least the same degree of care used to protect its own confidential information, but no less than reasonable care; (b) not disclose such information to any third party without prior written consent; (c) use such information solely for the Purpose described herein; and (d) promptly notify the other Party upon discovery of any unauthorized use or disclosure.
+
+<strong>4. TERM AND SURVIVAL</strong>
+This Agreement shall remain in effect for ${ph(t.term,'agreement term')} from the Effective Date. Confidentiality obligations shall survive termination of this Agreement for an additional period of ${ph(t.survival,'survival period')}.
+
+<strong>5. RETURN OF INFORMATION</strong>
+Upon written request or upon termination of this Agreement, each Party shall promptly return or destroy all Confidential Information of the other Party and certify in writing that it has done so.
+
+<strong>6. NO LICENSE OR OBLIGATION</strong>
+Nothing in this Agreement grants either Party any rights, licenses, or interests in the other Party's Confidential Information beyond those expressly stated herein. Nothing in this Agreement obligates either Party to enter into any further agreement or business relationship.
+
+<strong>7. GOVERNING LAW AND VENUE</strong>
+This Agreement shall be governed by and construed in accordance with the laws of ${ph(t.governingLaw,'governing law')}. The Parties consent to exclusive jurisdiction and venue in ${ph(t.venue,'venue')}.
+
+<strong>8. ENTIRE AGREEMENT</strong>
+This Agreement constitutes the entire agreement between the Parties with respect to its subject matter and supersedes all prior discussions and agreements relating thereto. This Agreement may not be amended except in a writing signed by both Parties.
+
+<strong>IN WITNESS WHEREOF</strong>, the Parties have executed this Agreement as of the Effective Date.
+
+
+${dN}
+
+By: ___________________________________
+Name: ${ph(d.signerName,'Signatory Name')}
+Title: ${ph(d.signerTitle,'Signatory Title')}
+Date: _________________________________
+
+
+${rN}
+
+By: ___________________________________
+Name: ${ph(r.signerName,'Signatory Name')}
+Title: ${ph(r.signerTitle,'Signatory Title')}
+Date: _________________________________`;
+
+  if (state.type === 'nda_one') return `<strong>NON-DISCLOSURE AGREEMENT</strong>
+
+This Non-Disclosure Agreement ("Agreement") is entered into as of ${today} ("Effective Date") between:
+
+${dN}, a ${ph(d.entity,'entity type')} organized under the laws of ${ph(d.jurisdiction,'jurisdiction')}, located at ${ph(d.address,'address')} ("Disclosing Party"); and
+
+${rN}, a ${ph(r.entity,'entity type')} organized under the laws of ${ph(r.jurisdiction,'jurisdiction')}, located at ${ph(r.address,'address')} ("Receiving Party").
+
+<strong>1. PURPOSE</strong>
+The Disclosing Party intends to disclose certain Confidential Information to the Receiving Party for the purpose of ${ph(t.purpose,'describe purpose of disclosure')}.
+
+<strong>2. CONFIDENTIAL INFORMATION</strong>
+"Confidential Information" means any non-public, proprietary, or sensitive information disclosed by the Disclosing Party, in any form, that is designated as confidential or that reasonably should be understood to be confidential. Excluded is information that is publicly available, already known to the Receiving Party, or independently developed by the Receiving Party.
+
+<strong>3. OBLIGATIONS OF THE RECEIVING PARTY</strong>
+The Receiving Party agrees to: (a) maintain the confidentiality of all Confidential Information; (b) not disclose it to any third party without prior written consent of the Disclosing Party; (c) use it solely for the stated Purpose; and (d) use at least the same degree of care as it uses for its own confidential information.
+
+<strong>4. TERM AND SURVIVAL</strong>
+This Agreement is effective for ${ph(t.term,'agreement term')} from the Effective Date. Confidentiality obligations shall survive for ${ph(t.survival,'survival period')} after termination.
+
+<strong>5. NO LICENSE</strong>
+Nothing herein grants the Receiving Party any rights to use, copy, modify, or distribute the Disclosing Party's Confidential Information beyond the Purpose.
+
+<strong>6. GOVERNING LAW AND VENUE</strong>
+This Agreement shall be governed by the laws of ${ph(t.governingLaw,'governing law')}, with exclusive jurisdiction in ${ph(t.venue,'venue')}.
+
+<strong>IN WITNESS WHEREOF:</strong>
+
+
+${dN} (Disclosing Party)
+
+By: ___________________________________
+Name: ${ph(d.signerName,'Signatory Name')}
+Title: ${ph(d.signerTitle,'Signatory Title')}
+Date: _________________________________
+
+
+${rN} (Receiving Party)
+
+By: ___________________________________
+Name: ${ph(r.signerName,'Signatory Name')}
+Title: ${ph(r.signerTitle,'Signatory Title')}
+Date: _________________________________`;
+
+  const label = state.type === 'reseller' ? 'RESELLER' : 'PARTNER';
+  const bLabel = state.type === 'reseller' ? 'Reseller' : 'Partner';
+  return `<strong>${label} AGREEMENT</strong>
+
+This ${label} Agreement ("Agreement") is entered into as of ${today} ("Effective Date") between:
+
+${dN}, a ${ph(d.entity,'entity type')} organized under the laws of ${ph(d.jurisdiction,'jurisdiction')}, located at ${ph(d.address,'address')} ("Company"); and
+
+${pN}${p.role ? ', acting as ' + p.role + ',' : ''} located at ${ph(p.address,'address')} ("${bLabel}").
+
+<strong>1. SCOPE OF ENGAGEMENT</strong>
+${ph(pt.scope,'Describe the products, services, or territory covered by this agreement.')}
+
+<strong>2. EXCLUSIVITY</strong>
+This Agreement is ${ph(pt.exclusivity,'exclusivity type')}. ${pt.exclusivity === 'exclusive' ? 'Company shall not appoint any other ' + bLabel.toLowerCase() + ' for the scope defined herein during the term of this Agreement.' : 'The Company retains the right to engage additional ' + bLabel.toLowerCase() + 's for the same or overlapping scope.'}
+
+<strong>3. COMPENSATION</strong>
+${ph(pt.compensation,'Describe compensation, commission structure, or revenue share terms.')}
+
+<strong>4. TERM AND TERMINATION</strong>
+This Agreement shall commence on the Effective Date and continue for ${ph(pt.duration,'duration')} unless earlier terminated. Either Party may terminate this Agreement with thirty (30) days prior written notice to the other Party.
+
+<strong>5. CONFIDENTIALITY</strong>
+Each Party agrees to maintain the confidentiality of the other Party's proprietary and business information disclosed in connection with this Agreement and to use such information solely for the purposes set out herein.
+
+<strong>6. INTELLECTUAL PROPERTY</strong>
+Each Party retains exclusive ownership of its respective intellectual property. Nothing in this Agreement grants either Party any license, right, or interest in the other Party's trademarks, trade secrets, patents, or proprietary materials without prior written consent.
+
+<strong>7. INDEPENDENT CONTRACTORS</strong>
+The Parties are independent contractors. Nothing in this Agreement creates any employment, agency, joint venture, or franchise relationship between the Parties.
+
+<strong>8. LIMITATION OF LIABILITY</strong>
+Neither Party shall be liable for indirect, incidental, consequential, special, or punitive damages arising out of or related to this Agreement, even if advised of the possibility of such damages.
+
+<strong>9. GOVERNING LAW AND VENUE</strong>
+This Agreement is governed by the laws of ${ph(pt.governingLaw,'governing law')}. Disputes shall be resolved in ${ph(pt.venue,'venue')}.
+
+<strong>10. ENTIRE AGREEMENT</strong>
+This Agreement constitutes the entire understanding between the Parties with respect to its subject matter and supersedes all prior negotiations and understandings.
+
+<strong>IN WITNESS WHEREOF:</strong>
+
+
+${dN} (Company)
+
+By: ___________________________________
+Name: ${ph(d.signerName,'Signatory Name')}
+Title: ${ph(d.signerTitle,'Signatory Title')}
+Date: _________________________________
+
+
+${pN} (${bLabel})
+
+By: ___________________________________
+Name: ${ph(p.signerName,'Signatory Name')}
+Title: ${ph(p.signerTitle,'Signatory Title')}
+Date: _________________________________`;
+}
+
+// ─── DOWNLOAD ────────────────────────────────────────────────────────────────
+function downloadDocx() {
+  const rawText = buildText().replace(/<strong>/g,'§BOLD§').replace(/<\/strong>/g,'§END§');
+  const lines = rawText.split('\n');
+  const label = TYPES.find(t => t.id === state.type)?.title || 'Agreement';
+  const date = new Date().toISOString().slice(0,10);
+
+  // Build a plain HTML document - opens in Word, Google Docs, everything
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+  body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.8;
+         margin: 1in; color: #000; }
+  h1 { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 24pt; }
+  .section-heading { font-weight: bold; margin-top: 16pt; margin-bottom: 4pt; }
+  p { margin: 0 0 8pt 0; }
+  .blank { margin-top: 24pt; }
+  .sig-line { border-bottom: 1px solid #000; width: 280px; display: inline-block; margin-bottom: 2pt; }
+</style>
+</head><body>`;
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed) { html += '<p>&nbsp;</p>'; return; }
+
+    const isCentered = /^§BOLD§[A-Z\s]+(AGREEMENT|NDA)§END§$/.test(trimmed);
+    const hasBold = trimmed.includes('§BOLD§');
+    const display = trimmed
+      .replace(/§BOLD§/g,'').replace(/§END§/g,'')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    if (isCentered) {
+      html += `<h1>${display}</h1>`;
+    } else if (hasBold) {
+      html += `<p class="section-heading">${display}</p>`;
+    } else if (display.startsWith('By: ___') || display.startsWith('Name: ') || display.startsWith('Title: ') || display.startsWith('Date: ___')) {
+      html += `<p style="margin-top:4pt;">${display}</p>`;
+    } else {
+      html += `<p>${display}</p>`;
+    }
+  });
+
+  html += '</body></html>';
+
+  // Encode as base64 data URI - works everywhere, no libraries needed
+  const encoded = btoa(unescape(encodeURIComponent(html)));
+  const dataURI = 'data:application/msword;base64,' + encoded;
+
+  const a = document.createElement('a');
+  a.href = dataURI;
+  a.download = `${label.replace(/\s+/g,'-')}_${date}.doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
